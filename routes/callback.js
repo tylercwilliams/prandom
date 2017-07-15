@@ -1,64 +1,64 @@
 let express = require('express');
 let router = express.Router();
+let db = require('../model');
 
-router.get('/', (req, res, next) => {
-	
-
-});
+let User = db.User;
+let Project = db.Project;
+let Channel = db.Channel;
 
 router.post('/', (req, res, next) => {
-	let text = res.body.text;
-	let tokens = text.split(" ");
-	
-	let username = tokens[0];
-	let command = tokens[1];
-	let channelName = tokens[3];
-	
-	let userRe = /<@[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
-	let channelRe = /<@[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
+  let text = req.body.text;
+  let tokens = text.split(' ');
 
-	// error state for malformed command.
-	if (!username.matches(escapedRe)) {
+  // TODO:  validate these in a meaningful way
+  let command = tokens[0];
 
-	};
+  let userRe = /<@[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
+  let channelRe = /<#[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
 
-	if (!(channelName != "add") || (channelName != "remove")) {
+  if (command == 'add') {
+    let username = tokens[1];
+    let projectName = tokens[3];
 
-	};
+    return Promise.all([
+      Project.findProject(projectName),
+      User.findOrCreate(username),
+    ])
+     .then(results => {
+      [project, user] = results;
+      console.log('Callback User: ' + user);
+      if (project === null) { return user; }
+      return user.addProject(project);
+    })
+    .then(user => {
+      return res.send({
+        response_type: 'ephemeral',
+        text: user,
+      });
+    })
+    .catch(next);
+  }
 
-	if (!channelName.matches(escapedRe)) {
+  if (command == 'register') {
+    let projectName = tokens[1];
+    let projectRepo = tokens[3];
 
-	};
+    return Project.findProject(projectName)
+      .then(project => {
+        if (project === null) {
+          return Project.createProject(projectName, projectRepo);
+        }
+      })
+    .then(project => {
+      return res.status(200).send(project);
+    });
+  }
 
-	if (command == 'add' && type == 'user') {
-		res.status(200).send({
-			response_type: 'ephemeral',
-				text: 'add user'
-		});
-		addUser();
-	}
-
-	if (command == 'add' && type == 'project') {
-		res.status(200).send({
-			response_type: 'ephemeral',
-				text: 'add user'
-		});
-		addProject();
-	}
+  return res.status(200).send({
+    response_type: 'ephemeral',
+    text: command + ' is not a valid command',
+  });
 
 });
-
-function addUser() {
-
-}
-
-function addProject() {
-}
-
-function removeUser() {
-}
-
-function removeProject() {
-}
 
 module.exports = router;
