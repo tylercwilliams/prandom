@@ -1,5 +1,5 @@
 let Sequelize = require('sequelize');
-let sequelize = new Sequelize('postgres://localhost:5000/prandom');
+let sequelize = new Sequelize('postgres://localhost/prandom');
 
 let User = sequelize.define('user', {
   username: {
@@ -9,6 +9,21 @@ let User = sequelize.define('user', {
     type: Sequelize.STRING,
   },
 });
+
+User.findUser = function findUser(slackUserEscape) {
+  let tokens = slackUserEscape.replace('<','').replace('>', '').split('|');
+
+  return User.findOne({where: {username: tokens[0]}});
+};
+
+User.createUser = function createUser(slackUserEscape) {
+  let tokens = slackUserEscape.replace('<','').replace('>', '').split('|');
+
+  return User.create({
+    username: tokens[0],
+    slackId: tokens[1],
+  });
+};
 
 let Channel = sequelize.define('channel', {
   channelName: {
@@ -28,13 +43,14 @@ let Project = sequelize.define('project', {
   },
 });
 
-Project.hasMany(User, { as: 'Contributors' });
-User.hasMany(Project, { as: 'Projects' });
+Project.belongsToMany(User, { through: 'UserProject' });
+User.belongsToMany(Project, { through: 'UserProject' });
 Channel.hasMany(User, { as: 'Members' });
-Channel.hasMany(Project, { as: 'Projects' });
+Channel.belongsToMany(Project, { through: 'MemberProject' });
 
 module.exports =  {
   User: User,
   Project: Project,
   Channel: Channel,
+  sequelize: sequelize,
 };

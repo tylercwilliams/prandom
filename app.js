@@ -1,12 +1,18 @@
-var express = require('express');
-var path = require('path');
-var logger = require('morgan');
-var bodyParser = require('body-parser');
+let db = require('./model');
+let sequelize = db.sequelize;
+let User = db.User;
+let Channel = db.Channel;
+let Project = db.Project;
 
-var index = require('./routes/index');
-var callback = require('./routes/callback');
+let express = require('express');
+let path = require('path');
+let logger = require('morgan');
+let bodyParser = require('body-parser');
 
-var app = express();
+let index = require('./routes/index');
+let callback = require('./routes/callback');
+
+let app = express();
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -32,5 +38,21 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).send(err.message);
   console.log(err.message);
 });
+
+sequelize
+  .authenticate()
+  .then(() => {
+    console.log('Connection has been established successfully.');
+    User.sync({force: true})
+      .then(_ => {
+        Project.sync({force: true});
+      })
+      .then(_ => {
+        Channel.sync({force: true});
+      });
+  })
+  .catch(err => {
+    console.error('Unable to connect to the database:', err);
+  });
 
 module.exports = app;

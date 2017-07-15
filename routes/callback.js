@@ -40,12 +40,18 @@ router.post('/', (req, res, next) => {
   }
 
   if (command == 'add' && type == 'user') {
-    res.status(200).send({
-      response_type: 'ephemeral',
-      text: 'add user',
-    });
-    addUser();
-    return;
+    User.findUser(username)
+    .then(user => {
+      if (user) { return user; }
+      return User.createUser(username);
+    })
+    .then(user => {
+      return res.status(200).send({
+        response_type: 'ephemeral',
+        text: user,
+      });
+    })
+    .catch(next);
   }
 
   if (command == 'add' && type == 'project') {
