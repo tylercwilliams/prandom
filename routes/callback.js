@@ -1,33 +1,42 @@
 let express = require('express');
 let router = express.Router();
+let db = require('../model');
 
-router.get('/', (req, res, next) => {
-
-
-});
+let User = db.User;
+let Project = db.Project;
+let Channel = db.Channel;
 
 router.post('/', (req, res, next) => {
-  let text = res.body.text;
+  let text = req.body.text;
   let tokens = text.split(' ');
 
-  let username = tokens[0];
-  let command = tokens[1];
+  let command = tokens[0];
+  let username  = tokens[1];
   let channelName = tokens[3];
+  let type = 'user';
 
   let userRe = /<@[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
   let channelRe = /<#[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
 
+  console.log('Command: ' + command);
+  console.log('Username: ' + username);
+  console.log('Channel name: ' + channelName);
+  console.log('Type: ' + type);
+
   // Error state for malformed command.
-  if (!username.matches(escapedRe)) {
-
+  if (!username.match(userRe)) {
+    res.status(404).send('username match err');
+    return;
   }
 
-  if ((channelName != 'add') || (channelName != 'remove')) {
-
+  if ((channelName == 'add') || (channelName == 'remove')) {
+    res.status(404).send('add remove err');
+    return;
   }
 
-  if (!channelName.matches(escapedRe)) {
-
+  if (!channelName.match(channelRe)) {
+    res.status(404).send('channel name err');
+    return;
   }
 
   if (command == 'add' && type == 'user') {
@@ -36,6 +45,7 @@ router.post('/', (req, res, next) => {
       text: 'add user',
     });
     addUser();
+    return;
   }
 
   if (command == 'add' && type == 'project') {
@@ -44,6 +54,7 @@ router.post('/', (req, res, next) => {
       text: 'add user',
     });
     addProject();
+    return;
   }
 
 });

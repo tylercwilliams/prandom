@@ -1,4 +1,5 @@
-let sequelize = new Sequelize('postgres://user:pass@example.com:5432/dbname');
+let Sequelize = require('sequelize');
+let sequelize = new Sequelize('postgres://localhost:5000/prandom');
 
 let User = sequelize.define('user', {
   username: {
@@ -32,3 +33,8 @@ User.hasMany(Project, { as: 'Projects' });
 Channel.hasMany(User, { as: 'Members' });
 Channel.hasMany(Project, { as: 'Projects' });
 
+module.exports =  {
+  User: User,
+  Project: Project,
+  Channel: Channel,
+};
