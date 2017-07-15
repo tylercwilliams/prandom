@@ -51,6 +51,14 @@ let Project = sequelize.define('project', {
   },
 });
 
+let UserProjects = sequelize.define('userProjects', {
+  id: {
+    type: Sequelize.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+});
+
 Project.findProject = function findProject(projectName) {
   return Project.findOne({where: {projectName: projectName}});
 };
@@ -62,10 +70,12 @@ Project.createProject = function createProject(projectName, url) {
   });
 };
 
-Project.belongsToMany(User, { through: 'UserProject' });
-User.belongsToMany(Project, { through: 'UserProject' });
+Project.belongsToMany(User, { through: UserProjects });
+User.belongsToMany(Project, { through: UserProjects });
 Channel.hasMany(User, { as: 'Members' });
-Channel.belongsToMany(Project, { through: 'MemberProject' });
+Channel.belongsToMany(Project, { through: UserProjects });
+
+sequelize.sync({force: true});
 
 module.exports =  {
   User: User,

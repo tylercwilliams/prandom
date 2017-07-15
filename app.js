@@ -43,13 +43,6 @@ sequelize
   .authenticate()
   .then(() => {
     console.log('Connection has been established successfully.');
-    User.sync({force: true})
-      .then(_ => {
-        Project.sync({force: true});
-      })
-      .then(_ => {
-        Channel.sync({force: true});
-      });
   })
   .catch(err => {
     console.error('Unable to connect to the database:', err);
