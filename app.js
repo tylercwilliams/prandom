@@ -36,7 +36,7 @@ app.use((err, req, res, next) => {
 
   // render the error page
   res.status(err.status || 500).send(err.message);
-  console.log(err.message);
+  console.log(err);
 });
 
 sequelize

@@ -10,6 +10,7 @@ router.post('/', (req, res, next) => {
   let text = req.body.text;
   let tokens = text.split(' ');
 
+  // TODO:  validate these in a meaningful way
   let command = tokens[0];
   let username = tokens[1];
   let projectName = tokens[3];
@@ -21,17 +22,14 @@ router.post('/', (req, res, next) => {
   console.log('Username: ' + username);
 
   // Error state for malformed command.
-  if (!username.match(userRe)) {
-    return res.status(404).send('username match err');
-  }
 
   if (command == 'add') {
-    return Promise.all(
+    return Promise.all([
       Project.findProject(projectName),
-      User.findOrCreate(username)
-    )
+      User.findOrCreate(username),
+    ])
      .then((project, user) => {
-      if (!project) {
+      if (project === null) {
         return res.status(200).send({
           response_type: 'ephemeral',
           text: 'No project found with that name',
@@ -43,6 +41,18 @@ router.post('/', (req, res, next) => {
       });
     })
     .catch(next);
+  }
+
+  if (command == 'register') {
+    return Project.findProject(username)
+      .then(project => {
+        if (project === null) {
+          return Project.createProject(username);
+        }
+      })
+    .then(project => {
+      return res.status(200).send(project);
+    });
   }
 });
 
