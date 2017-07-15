@@ -11,41 +11,32 @@ router.post('/', (req, res, next) => {
   let tokens = text.split(' ');
 
   let command = tokens[0];
-  let username  = tokens[1];
-  let channelName = tokens[3];
-  let type = 'user';
+  let username = tokens[1];
+  let projectName = tokens[3];
 
   let userRe = /<@[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
   let channelRe = /<#[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
 
   console.log('Command: ' + command);
   console.log('Username: ' + username);
-  console.log('Channel name: ' + channelName);
-  console.log('Type: ' + type);
 
   // Error state for malformed command.
   if (!username.match(userRe)) {
-    res.status(404).send('username match err');
-    return;
+    return res.status(404).send('username match err');
   }
 
-  if ((channelName == 'add') || (channelName == 'remove')) {
-    res.status(404).send('add remove err');
-    return;
-  }
-
-  if (!channelName.match(channelRe)) {
-    res.status(404).send('channel name err');
-    return;
-  }
-
-  if (command == 'add' && type == 'user') {
-    User.findUser(username)
-    .then(user => {
-      if (user) { return user; }
-      return User.createUser(username);
-    })
-    .then(user => {
+  if (command == 'add') {
+    return Promise.all(
+      Project.findProject(projectName),
+      User.findOrCreate(username)
+    )
+     .then((project, user) => {
+      if (!project) {
+        return res.status(200).send({
+          response_type: 'ephemeral',
+          text: 'No project found with that name',
+        });
+      }
       return res.status(200).send({
         response_type: 'ephemeral',
         text: user,
@@ -53,32 +44,6 @@ router.post('/', (req, res, next) => {
     })
     .catch(next);
   }
-
-  if (command == 'add' && type == 'project') {
-    res.status(200).send({
-      response_type: 'ephemeral',
-      text: 'add user',
-    });
-    addProject();
-    return;
-  }
-
 });
-
-function addUser() {
-
-}
-
-function addProject() {
-
-}
-
-function removeUser() {
-
-}
-
-function removeProject() {
-
-}
 
 module.exports = router;

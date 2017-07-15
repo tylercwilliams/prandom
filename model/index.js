@@ -25,6 +25,14 @@ User.createUser = function createUser(slackUserEscape) {
   });
 };
 
+User.findOrCreate = function findOrCreate(escapedUser) {
+  return User.findUser(escapedUser)
+    .then(user => {
+      if (user) { return user; }
+      return User.createUser(escapedUser);
+    });
+};
+
 let Channel = sequelize.define('channel', {
   channelName: {
     type: Sequelize.STRING,
@@ -42,6 +50,17 @@ let Project = sequelize.define('project', {
     type: Sequelize.STRING,
   },
 });
+
+Project.findProject = function findProject(projectName) {
+  return Project.findOne({where: {projectName: projectName}});
+};
+
+Project.createProject = function createProject(projectName, url) {
+  return Project.create({
+    projectName: projectName,
+    proejectReportUrl: url,
+  });
+};
 
 Project.belongsToMany(User, { through: 'UserProject' });
 User.belongsToMany(Project, { through: 'UserProject' });
