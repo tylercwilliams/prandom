@@ -13,6 +13,7 @@ router.post('/', (req, res, next) => {
   // TODO:  validate these in a meaningful way
   let command = tokens[0];
 
+  // keep these around to validate the fields from slack
   let userRe = /<@[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
   let channelRe = /<#[a-zA-Z0-9]+\|[0-9a-zA-Z_-]+>/g;
 
@@ -26,15 +27,11 @@ router.post('/', (req, res, next) => {
     ])
      .then(results => {
       [project, user] = results;
-      console.log('Callback User: ' + user);
       if (project === null) { return user; }
       return user.addProject(project);
     })
     .then(user => {
-      return res.send({
-        response_type: 'ephemeral',
-        text: user,
-      });
+      return res.send(user);
     })
     .catch(next);
   }
@@ -55,7 +52,6 @@ router.post('/', (req, res, next) => {
   }
 
   return res.status(200).send({
-    response_type: 'ephemeral',
     text: command + ' is not a valid command',
   });
 
