@@ -1,5 +1,5 @@
 let Sequelize = require('sequelize');
-let sequelize = new Sequelize('postgres://localhost/prandom');
+let sequelize = new Sequelize(process.env.DATABASE_URL);
 
 let User = sequelize.define('user', {
   username: {
